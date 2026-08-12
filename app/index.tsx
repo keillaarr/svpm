@@ -54,6 +54,14 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.botao}
+            onPress={() => router.push('/alteracao-email')}>
+            <Text style={styles.botaoTexto}>
+            •  Alteração de Email
+            </Text>
+          </TouchableOpacity>
+
 
 
 
