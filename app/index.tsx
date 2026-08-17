@@ -62,6 +62,12 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.botao}
+            onPress={() => router.push('/links-uteis')}>
+            <Text style={styles.botaoTexto}>• Links Úteis</Text>
+          </TouchableOpacity>
+
 
 
 
