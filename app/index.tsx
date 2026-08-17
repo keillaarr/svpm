@@ -68,6 +68,12 @@ export default function HomeScreen() {
             <Text style={styles.botaoTexto}>• Links Úteis</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.botao}
+            onPress={() => router.push('/dados-cadastrais' as any)}>
+            <Text style={styles.botaoTexto}>• Dados Cadastrais</Text>
+          </TouchableOpacity>
+
 
 
 
