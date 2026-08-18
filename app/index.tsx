@@ -80,6 +80,12 @@ export default function HomeScreen() {
             <Text style={styles.botaoTexto}>• Consulta Agendamento</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.botao}
+            onPress={() => router.push('/inserir-comunicados' as any)}>
+            <Text style={styles.botaoTexto}>• Inserir Comunicados</Text>
+          </TouchableOpacity>
+
 
 
 
