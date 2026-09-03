@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React from 'react';
 import { Linking, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -9,15 +10,17 @@ const openExternalLink = (url: string) => {
   Linking.openURL(url);
 };
 
-
-
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
           <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoTexto}>⚓</Text>
+            <Image 
+                source={require('@/assets/images/logo-marinha.jpg')} 
+                style={styles.logoImagem} 
+                contentFit="cover" 
+              />
           </View>
           <Text style={styles.titulo}>Família Naval</Text>
           <Text style={styles.subtitulo}>O Sr. está no SVPM!</Text>
@@ -34,7 +37,7 @@ export default function HomeScreen() {
             style={styles.botao}
             onPress={() => router.push('/dacp')}>
             <Text style={styles.botaoTexto}>
-            •  Declaração Auxílio-Invalidez
+              • Declaração Auxílio-Invalidez
             </Text>
           </TouchableOpacity>
 
@@ -42,7 +45,7 @@ export default function HomeScreen() {
             style={styles.botao}
             onPress={() => router.push('/cadastro-ttc')}>
             <Text style={styles.botaoTexto}>
-            •  Cadastro TTC 
+              • Cadastro TTC 
             </Text>
           </TouchableOpacity>
 
@@ -50,7 +53,7 @@ export default function HomeScreen() {
             style={styles.botao}
             onPress={() => router.push('/consulta')}>
             <Text style={styles.botaoTexto}>
-            •  Consultas
+              • Consultas
             </Text>
           </TouchableOpacity>
 
@@ -58,7 +61,7 @@ export default function HomeScreen() {
             style={styles.botao}
             onPress={() => router.push('/alteracao-email')}>
             <Text style={styles.botaoTexto}>
-            •  Alteração de Email
+              • Alteração de Email
             </Text>
           </TouchableOpacity>
 
@@ -86,12 +89,7 @@ export default function HomeScreen() {
             <Text style={styles.botaoTexto}>• Inserir Comunicados</Text>
           </TouchableOpacity>
 
-
-
-
         </View>
-
-        
       </ScrollView>
     </SafeAreaView>
   );
@@ -105,29 +103,34 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     backgroundColor: '#003366',
-    padding: 40,
+    paddingVertical: 30,
+    paddingHorizontal: 20,
   },
   logoPlaceholder: {
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 30,
-    height: 60,
-    justifyContent: 'center',
-    marginBottom: 10,
-    width: 60,
-  },
-  logoTexto: {
-    fontSize: 30,
+  alignItems: 'center',
+  backgroundColor: '#FFF',
+  borderRadius: 50,
+  height: 150,
+  width: 150,
+  justifyContent: 'center',
+  marginBottom: 35,
+  overflow: 'hidden', // Mantém o corte redondo perfeito nas bordas
+},
+  logoImagem: {
+    width: '100%',
+    height: '100%',
   },
   titulo: {
     color: '#FFF',
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
   subtitulo: {
-    color: '#D1D1D1',
+    color: '#E0E0E0',
     fontSize: 14,
     fontStyle: 'italic',
+    marginTop: 4,
   },
   corpo: {
     padding: 20,

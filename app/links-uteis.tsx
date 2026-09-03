@@ -4,11 +4,31 @@ import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const LINKS = [
-  { label: 'BP Online', url: 'https://bponline.marinha.mil.br/bponline/login' },
-  { label: 'eConsig', url: 'https://papem.econsigmb.com.br/mb/v3/autenticar#no-back' },
-  { label: 'Pesquisa de Avaliação do Atendimento', url: 'https://www.marinha.mil.br/svpm/form/pesquisaAtendimento' },
-  { label: 'Abrigo do Marinheiro', url: 'https://www.abrigo.org.br/' },
-  { label: 'Identidade Digital', url: 'https://www.marinha.mil.br/sim/id_digital' },
+  { 
+    label: 'BP Online', 
+    url: 'https://bponline.marinha.mil.br/bponline/login',
+    icon: require('@/assets/images/pg_menor.png'),
+  },
+  { 
+    label: 'eConsig', 
+    url: 'https://papem.econsigmb.com.br/mb/v3/autenticar#no-back',
+    icon: require('@/assets/images/econsigbranca3.png'),
+  },
+  { 
+    label: 'Pesquisa de Avaliação do Atendimento', 
+    url: 'https://www.marinha.mil.br/svpm/form/pesquisaAtendimento',
+    icon: require('@/assets/images/pesqatendimentonova.png'),
+  },
+  { 
+    label: 'Abrigo do Marinheiro', 
+    url: 'https://www.abrigo.org.br/',
+    icon: require('@/assets/images/abrigo1.png'),
+  },
+  { 
+    label: 'Identidade Digital', 
+    url: 'https://www.marinha.mil.br/sim/id_digital',
+    icon: require('@/assets/images/identidadesim.png'),
+  },
 ];
 
 export default function LinksUteis() {
@@ -24,7 +44,6 @@ export default function LinksUteis() {
         </View>
 
         <View style={styles.content}>
-
           <View style={styles.body}>
             {LINKS.map((item) => (
               <TouchableOpacity
@@ -37,7 +56,7 @@ export default function LinksUteis() {
                     console.warn('Failed to open url', item.url, e);
                   }
                 }}>
-                <Image source={require('@/assets/images/react-logo.png')} style={styles.linkIcon} contentFit="contain" />
+                <Image source={item.icon} style={styles.linkIcon} contentFit="contain" />
                 <Text style={styles.linkText}>{item.label}</Text>
               </TouchableOpacity>
             ))}
@@ -84,21 +103,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 4,
   },
-  card: {
-    backgroundColor: '#003366',
-    borderRadius: 12,
-    padding: 24,
-    elevation: 2,
-    marginBottom: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardTitle: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
   body: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -122,5 +126,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
-  
 });
