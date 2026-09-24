@@ -1,9 +1,9 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -25,8 +25,17 @@ const API_URL = `http://${IP_MAQUINA}:8080/api/v1/pessoa/home/${NIP_USUARIO}`;
 const declaracaoDependentesUrl =
   'https://portalcidadao.dataprev.gov.br/#/mb/r/novo-pedido/informacao/2709/declaracao-de-dependentes-para-fins-de-imposto-de-renda-retido-na-fonte';
 
-const openExternalLink = (url: string) => {
-  Linking.openURL(url);
+// Função para abrir o link dentro da própria aplicação
+const openInAppBrowser = async (url: string) => {
+  try {
+    await WebBrowser.openBrowserAsync(url, {
+      toolbarColor: '#003366', // Cor da barra superior (mesma do app)
+      controlsColor: '#FFFFFF',
+      showTitle: true,
+    });
+  } catch (error) {
+    console.error('Erro ao abrir o navegador interno:', error);
+  }
 };
 
 export default function HomeScreen() {
@@ -82,7 +91,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             style={styles.botao}
-            onPress={() => openExternalLink(declaracaoDependentesUrl)}>
+            onPress={() => openInAppBrowser(declaracaoDependentesUrl)}>
             <Text style={styles.botaoTexto}>• Declaração de Dependentes para IRRF</Text>
           </TouchableOpacity>
 
