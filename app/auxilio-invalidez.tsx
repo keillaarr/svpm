@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -5,6 +6,7 @@ import {
   Alert,
   SafeAreaView,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -29,7 +31,6 @@ export default function AuxilioInvalidezScreen() {
     email: '',
   });
 
-  // Simula o carregamento dos dados já existentes no banco do SVPM
   useEffect(() => {
     const carregarDadosDoBanco = async () => {
       try {
@@ -57,7 +58,6 @@ export default function AuxilioInvalidezScreen() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Máscara e formatador de Telefone
   const handlePhoneChange = (value: string) => {
     const raw = value.replace(/\D/g, '');
     let formatted = raw;
@@ -75,7 +75,6 @@ export default function AuxilioInvalidezScreen() {
     handleChange('telefone', formatted);
   };
 
-  // Buscar endereço via CEP automaticamente ao editar
   const handleCepChange = async (value: string) => {
     const rawCep = value.replace(/\D/g, '');
     let formattedCep = rawCep;
@@ -133,24 +132,33 @@ export default function AuxilioInvalidezScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
-        <View style={styles.header}>
-          <View style={styles.logoBadge}>
-            <Text style={styles.logoIcon}>⚓</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#003366" />
+
+      {/* Header Fixo Padronizado Família Naval */}
+      <View style={styles.headerBar}>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View>
+            <Text style={styles.headerSubtitle}>FAMÍLIA NAVAL</Text>
+            <Text style={styles.headerTitle}>Auxílio-Invalidez</Text>
           </View>
-          <Text style={styles.headerTitle}>Família Naval</Text>
-          <Text style={styles.headerSubtitle}>Declaração Auxílio-Invalidez</Text>
         </View>
+        <Ionicons name="medkit-outline" size={20} color="#B0C4DE" />
+      </View>
 
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* CARD PRINCIPAL */}
-        <View style={styles.card}>
-          <Text style={styles.docTitle}>
-            DECLARAÇÃO ANUAL PARA PERCEPÇÃO DO AUXÍLIO-INVALIDEZ
-          </Text>
+        <View style={styles.cardItem}>
+          <View style={styles.docHeaderBadge}>
+            <Ionicons name="document-text-outline" size={22} color={COLORS.primary} />
+            <Text style={styles.docTitle}>
+              DECLARAÇÃO ANUAL PARA PERCEPÇÃO DO AUXÍLIO-INVALIDEZ
+            </Text>
+          </View>
 
-          {/* TEXTO DESCRITIVO CONFORME A IMAGEM */}
           <Text style={styles.declarationText}>
             Eu, <Text style={styles.boldText}>SO GUILHERME SOUSA DA SILVA</Text>, portador(a) do NIP{' '}
             <Text style={styles.boldText}>85856967</Text>, CPF{' '}
@@ -192,7 +200,7 @@ export default function AuxilioInvalidezScreen() {
             onPress={() => setCienteTermos(!cienteTermos)}>
             <View style={styles.checkboxRow}>
               <View style={[styles.checkbox, cienteTermos && styles.checkboxChecked]}>
-                {cienteTermos && <Text style={styles.checkmark}>✓</Text>}
+                {cienteTermos && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
               </View>
               <Text style={styles.checkboxLabel}>Declaro que estou ciente (Obrigatório):</Text>
             </View>
@@ -206,20 +214,26 @@ export default function AuxilioInvalidezScreen() {
 
           {/* CABEÇALHO DA SEÇÃO DE ENDEREÇO */}
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionHeader}>Preencha os dados de contato e endereço:</Text>
+            <Text style={styles.sectionHeader}>Dados de Contato e Endereço</Text>
             <TouchableOpacity
               activeOpacity={0.7}
               style={styles.btnEditar}
               onPress={() => setEditandoEndereco(!editandoEndereco)}>
+              <Ionicons
+                name={editandoEndereco ? 'lock-closed-outline' : 'create-outline'}
+                size={14}
+                color={COLORS.primary}
+                style={{ marginRight: 4 }}
+              />
               <Text style={styles.btnEditarTexto}>
-                {editandoEndereco ? '🔒 Bloquear' : '✏️ Editar'}
+                {editandoEndereco ? 'Bloquear' : 'Editar'}
               </Text>
             </TouchableOpacity>
           </View>
 
           {loadingDadosBanco ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#003366" />
+              <ActivityIndicator size="large" color={COLORS.primary} />
               <Text style={styles.loadingText}>Buscando endereço cadastrado...</Text>
             </View>
           ) : (
@@ -228,7 +242,7 @@ export default function AuxilioInvalidezScreen() {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={styles.label}>CEP</Text>
-                  {loadingCep && <ActivityIndicator size="small" color="#003366" />}
+                  {loadingCep && <ActivityIndicator size="small" color={COLORS.primary} />}
                 </View>
                 <TextInput
                   style={[styles.input, !editandoEndereco && styles.inputDisabled]}
@@ -327,6 +341,7 @@ export default function AuxilioInvalidezScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity activeOpacity={0.7} style={styles.btnSecondary} onPress={() => router.back()}>
+            <Ionicons name="arrow-back-outline" size={16} color={COLORS.textMuted} style={{ marginRight: 6 }} />
             <Text style={styles.btnSecondaryText}>Voltar</Text>
           </TouchableOpacity>
         </View>
@@ -335,56 +350,87 @@ export default function AuxilioInvalidezScreen() {
   );
 }
 
+const COLORS = {
+  primary: '#003366',
+  primaryLight: '#EBF3FA',
+  bg: '#F5F7FA',
+  white: '#FFFFFF',
+  text: '#222222',
+  textMuted: '#555555',
+  border: '#D0DCE5',
+  borderLight: '#E0E0E0',
+};
+
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#003366',
   },
-  content: {
-    paddingBottom: 24,
-  },
-  header: {
+  headerBar: {
+    backgroundColor: '#003366',
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 24,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  logoBadge: {
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 25,
-    height: 50,
-    justifyContent: 'center',
-    marginBottom: 8,
-    width: 50,
   },
-  logoIcon: {
-    fontSize: 24,
+  backButton: {
+    marginRight: 12,
+  },
+  headerSubtitle: {
+    color: '#B0C4DE',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
   },
   headerTitle: {
     color: '#FFFFFF',
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: 'bold',
   },
-  headerSubtitle: {
-    color: '#E0E6ED',
-    fontSize: 13,
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 40,
+    backgroundColor: COLORS.bg,
+    flexGrow: 1,
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    minHeight: '100%',
+  cardItem: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  docHeaderBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#C5DDF3',
   },
   docTitle: {
-    color: '#003366',
-    fontSize: 15,
+    color: COLORS.primary,
+    fontSize: 13,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 22,
+    marginLeft: 10,
+    flex: 1,
+    lineHeight: 18,
   },
   declarationText: {
-    color: '#2D3748',
+    color: COLORS.text,
     fontSize: 13,
     lineHeight: 20,
     marginBottom: 16,
@@ -392,37 +438,37 @@ const styles = StyleSheet.create({
   },
   boldText: {
     fontWeight: 'bold',
-    color: '#1A202C',
+    color: COLORS.primary,
   },
   questionBox: {
-    backgroundColor: '#F0F4F8',
-    borderRadius: 10,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
     padding: 14,
     marginBottom: 14,
-    borderColor: '#D0DCE5',
+    borderColor: COLORS.borderLight,
     borderWidth: 1,
   },
   questionText: {
-    color: '#003366',
+    color: COLORS.primary,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
   },
   segmentedContainer: {
     flexDirection: 'row',
-    backgroundColor: '#DDE5ED',
-    borderRadius: 8,
-    padding: 3,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 10,
+    padding: 4,
   },
   segmentBtn: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 6,
+    borderRadius: 8,
   },
   segmentActiveNo: {
-    backgroundColor: '#003366',
+    backgroundColor: COLORS.primary,
   },
   segmentActiveYes: {
     backgroundColor: '#D32F2F',
@@ -439,8 +485,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8E1',
     borderColor: '#FFE082',
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 14,
     marginBottom: 20,
   },
   infoBoxChecked: {
@@ -453,28 +499,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 6,
     borderWidth: 1.5,
     borderColor: '#795548',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 10,
     backgroundColor: '#FFFFFF',
   },
   checkboxChecked: {
-    backgroundColor: '#003366',
-    borderColor: '#003366',
-  },
-  checkmark: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   checkboxLabel: {
     color: '#5D4037',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
   },
   infoText: {
@@ -487,23 +528,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderLight,
+    paddingBottom: 8,
   },
   sectionHeader: {
-    color: '#003366',
+    color: COLORS.primary,
     fontSize: 14,
     fontWeight: 'bold',
-    flex: 1,
   },
   btnEditar: {
-    backgroundColor: '#EBF3FA',
-    borderColor: '#003366',
+    backgroundColor: COLORS.primaryLight,
+    borderColor: '#C5DDF3',
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   btnEditarTexto: {
-    color: '#003366',
+    color: COLORS.primary,
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -513,7 +558,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 8,
-    color: '#666',
+    color: COLORS.textMuted,
     fontSize: 13,
   },
   inputGroup: {
@@ -525,47 +570,51 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   label: {
-    color: '#333333',
+    color: COLORS.text,
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 4,
   },
   input: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#CCCCCC',
-    borderRadius: 8,
+    borderColor: COLORS.border,
+    borderRadius: 10,
     borderWidth: 1,
     fontSize: 14,
     height: 44,
     paddingHorizontal: 12,
-    color: '#333333',
+    color: COLORS.text,
   },
   inputDisabled: {
     backgroundColor: '#F0F4F8',
-    color: '#666666',
-    borderColor: '#D0DCE5',
+    color: COLORS.textMuted,
+    borderColor: COLORS.border,
   },
   btnPrimary: {
-    backgroundColor: '#003366',
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 16,
   },
   btnPrimaryText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   btnSecondary: {
-    backgroundColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingVertical: 12,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingVertical: 14,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
+    marginTop: 10,
   },
   btnSecondaryText: {
-    color: '#333333',
+    color: COLORS.textMuted,
     fontSize: 14,
     fontWeight: 'bold',
   },

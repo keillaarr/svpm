@@ -56,7 +56,7 @@ const SOLICITACOES_LIST = [
     color: '#003366',
     route: 'dacp',
   },
-  { title: 'Auxílio-Invalidez', icon: 'wheelchair-accessibility', color: '#003366' },
+  { title: 'Auxílio-Invalidez', icon: 'wheelchair-accessibility', color: '#003366' , route: 'auxilio-invalidez' },
   { title: 'Cadastro TTC', icon: 'briefcase-account-outline', color: '#003366', route: 'cadastro-ttc' },
   { title: 'Comunicados', icon: 'bullhorn-outline', color: '#003366', route: 'comunicados' },
 ];

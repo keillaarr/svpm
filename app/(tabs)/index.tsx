@@ -1,234 +1,133 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
-  Dimensions,
-  Linking,
-  Modal,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 
-const { width } = Dimensions.get('window');
+export default function AuxilioInvalidezScreen() {
+  const [exerceAtividade, setExerceAtividade] = useState<boolean>(false);
+  const [cienteTermos, setCienteTermos] = useState<boolean>(false);
+  const [loadingCep, setLoadingCep] = useState<boolean>(false);
+  const [loadingDadosBanco, setLoadingDadosBanco] = useState<boolean>(true);
+  const [editandoEndereco, setEditandoEndereco] = useState<boolean>(false);
 
-// Contexto/Hook dinâmico alinhado ao ecossistema Família Naval (SVPM)
-const useUserProfile = () => ({
-  user: {
-    nomeCompleto: 'DESENVOLVEDORA SVPM',
-    nomeExibição: 'Equipe Técnica',
-    nip: '00000000',
-    vinculo: 'Desenvolvimento / Suporte',
-    avatarInitials: 'DS',
-  },
-});
+  const [form, setForm] = useState({
+    cep: '',
+    endereco: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
+    telefone: '',
+    email: '',
+  });
 
-type TabType = 'inicio' | 'solicitacoes' | 'perfil';
-
-const SOLICITACOES_LIST = [
-  {
-    title: 'Requerimento de Inspeção de Saúde',
-    icon: 'medical',
-    color: '#003366',
-    route: 'requerimento-inspecao-saude',
-  },
-  {
-    title: 'BP ON-LINE',
-    icon: 'file-document-outline',
-    color: '#003366',
-    url: 'https://bponline.marinha.mil.br/bponline/login',
-  },
-  {
-    title: 'Declaração de Dependentes IR',
-    icon: 'account-group-outline',
-    color: '#003366',
-    badge: 'NOVO',
-    url: 'https://portalcidadao.dataprev.gov.br/#/mb/r/novo-pedido/informacao/2709/declaracao-de-dependentes-para-fins-de-imposto-de-renda-retido-na-fonte',
-  },
-  {
-    title: 'Declaração de Acumulo de Cargos Públicos',
-    icon: 'scale-balance',
-    color: '#003366',
-    route: 'dacp',
-  },
-  { title: 'Auxílio-Invalidez', icon: 'wheelchair-accessibility', color: '#003366' },
-  { title: 'Cadastro TTC', icon: 'briefcase-account-outline', color: '#003366', route: 'cadastro-ttc' },
-  { title: 'Comunicados', icon: 'bullhorn-outline', color: '#003366', route: 'comunicados' },
-];
-
-export default function FamiliaNavalScreen() {
-  const navigation = useNavigation<any>();
-  const { user } = useUserProfile();
-  const [activeTab, setActiveTab] = useState<TabType>('inicio');
-  const [drawerVisible, setDrawerVisible] = useState(false);
-
-  const handleAction = async (item: {
-    title: string;
-    url?: string;
-    targetTab?: TabType;
-    route?: string;
-  }) => {
-    if (item.url) {
-      const supported = await Linking.canOpenURL(item.url);
-      if (supported) {
-        await Linking.openURL(item.url);
-      } else {
-        Alert.alert('Aviso', `Não foi possível abrir o link: ${item.url}`);
-      }
-    } else if (item.route) {
+  useEffect(() => {
+    const carregarDadosDoBanco = async () => {
       try {
-        navigation.navigate(item.route);
+        setTimeout(() => {
+          setForm({
+            cep: '21041-190',
+            endereco: 'Rua Engenheiro Artur Moura, 456, BL6 AP405',
+            bairro: 'Bonsucesso',
+            cidade: 'Rio de Janeiro',
+            uf: 'RJ',
+            telefone: '(21) 98032-4930',
+            email: 'usuario@marinha.mil.br',
+          });
+          setLoadingDadosBanco(false);
+        }, 800);
       } catch (error) {
-        Alert.alert(
-          'Erro de Navegação',
-          `A rota "${item.route}" não foi registrada no Navigator ou o hook não alcançou o Stack.`
-        );
+        setLoadingDadosBanco(false);
       }
-    } else if (item.targetTab) {
-      setActiveTab(item.targetTab);
-    } else {
-      Alert.alert(item.title, `Acessando módulo de ${item.title}...`);
+    };
+
+    carregarDadosDoBanco();
+  }, []);
+
+  const handleChange = (field: string, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const raw = value.replace(/\D/g, '');
+    let formatted = raw;
+
+    if (raw.length > 10) {
+      formatted = `(${raw.slice(0, 2)}) ${raw.slice(2, 7)}-${raw.slice(7, 11)}`;
+    } else if (raw.length > 6) {
+      formatted = `(${raw.slice(0, 2)}) ${raw.slice(2, 6)}-${raw.slice(6, 10)}`;
+    } else if (raw.length > 2) {
+      formatted = `(${raw.slice(0, 2)}) ${raw.slice(2)}`;
+    } else if (raw.length > 0) {
+      formatted = `(${raw}`;
+    }
+
+    handleChange('telefone', formatted);
+  };
+
+  const handleCepChange = async (value: string) => {
+    const rawCep = value.replace(/\D/g, '');
+    let formattedCep = rawCep;
+    if (rawCep.length > 5) {
+      formattedCep = `${rawCep.slice(0, 5)}-${rawCep.slice(5, 8)}`;
+    }
+    handleChange('cep', formattedCep);
+
+    if (rawCep.length === 8) {
+      setLoadingCep(true);
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${rawCep}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+          setForm((prev) => ({
+            ...prev,
+            endereco: data.logradouro || prev.endereco,
+            bairro: data.bairro || prev.bairro,
+            cidade: data.localidade || prev.cidade,
+            uf: data.uf || prev.uf,
+          }));
+        }
+      } catch (e) {
+        // Ignora erro de rede silenciosamente
+      } finally {
+        setLoadingCep(false);
+      }
     }
   };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'inicio':
-        return (
-          <>
-            {/* Card de Saudação / Vínculo dinâmico */}
-            <View style={styles.welcomeCard}>
-              <View style={styles.welcomeHeader}>
-                <View style={styles.avatarCircle}>
-                  <Text style={styles.avatarText}>{user.avatarInitials}</Text>
-                </View>
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.welcomeSubtitle}>Órgão: SVPM</Text>
-                  <Text style={styles.welcomeTitle}>{user.nomeCompleto}</Text>
-                  <Text style={styles.nipText}>Identificação: {user.vinculo}</Text>
-                </View>
-              </View>
-            </View>
+  const handleEnviar = () => {
+    if (!form.cep || !form.endereco || !form.cidade || !form.telefone) {
+      Alert.alert('Campos Obrigatórios', 'Por favor, preencha os dados de endereço e telefone.');
+      return;
+    }
 
-            {/* Autoatendimento (Carrossel Horizontal) */}
-            <View style={styles.sectionContainer}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Autoatendimento</Text>
-                <TouchableOpacity onPress={() => setActiveTab('solicitacoes')}>
-                  <Text style={styles.seeAllText}>Ver todos</Text>
-                </TouchableOpacity>
-              </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-                {[
-                  {
-                    title: 'BP ON-LINE',
-                    icon: 'document-text-outline',
-                    color: '#003366',
-                    url: 'https://bponline.marinha.mil.br/bponline/login',
-                  },
-                  {
-                    title: 'Consultas',
-                    icon: 'search-outline',
-                    color: '#003366',
-                    route: 'consulta',
-                  },
-                  {
-                    title: 'Dados Cadastrais',
-                    icon: 'person-outline',
-                    color: '#003366',
-                    route: 'dados-cadastrais',
-                  },
-                  {
-                    title: 'Declaração de Dependentes IR',
-                    icon: 'people-outline',
-                    color: '#003366',
-                    url: 'https://portalcidadao.dataprev.gov.br/#/mb/r/novo-pedido/informacao/2709/declaracao-de-dependentes-para-fins-de-imposto-de-renda-retido-na-fonte',
-                  },
-                ].map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.shortcutCard}
-                    onPress={() => handleAction(item)}
-                  >
-                    <View style={[styles.shortcutIconBg, { backgroundColor: '#e6f2ff' }]}>
-                      <Ionicons name={item.icon as any} size={24} color={item.color} />
-                    </View>
-                    <Text style={styles.shortcutText}>{item.title}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
+    if (!cienteTermos) {
+      Alert.alert('Atenção', 'Você deve confirmar estar ciente dos termos da declaração antes de enviar.');
+      return;
+    }
 
-            {/* Grid de Solicitações (3 colunas no Início) */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Solicitações</Text>
-              <View style={styles.gridContainer}>
-                {SOLICITACOES_LIST.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.gridItem}
-                    onPress={() => handleAction(item)}
-                  >
-                    {item.badge && (
-                      <View style={styles.gridBadge}>
-                        <Text style={styles.badgeNewText}>{item.badge}</Text>
-                      </View>
-                    )}
-                    <View style={styles.gridIconBg}>
-                      <MaterialCommunityIcons name={item.icon as any} size={26} color={item.color} />
-                    </View>
-                    <Text style={styles.gridText} numberOfLines={2}>{item.title}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </>
-        );
-
-      case 'solicitacoes':
-        return (
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Todas as Solicitações</Text>
-            <Text style={styles.sectionSubtitle}>Selecione o serviço pretendido (2 por linha)</Text>
-            {/* Grid com 2 colunas para a aba de solicitações */}
-            <View style={styles.gridTwoColumnsContainer}>
-              {SOLICITACOES_LIST.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.gridTwoColumnsItem}
-                  onPress={() => handleAction(item)}
-                >
-                  {item.badge && (
-                    <View style={styles.gridBadge}>
-                      <Text style={styles.badgeNewText}>{item.badge}</Text>
-                    </View>
-                  )}
-                  <View style={styles.gridIconBg}>
-                    <MaterialCommunityIcons name={item.icon as any} size={28} color={item.color} />
-                  </View>
-                  <Text style={styles.gridTwoColumnsText} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        );
-
-      case 'perfil':
-        return (
-          <View style={styles.tabPlaceholderContainer}>
-            <Ionicons name="person-circle-outline" size={56} color="#003366" />
-            <Text style={styles.tabPlaceholderTitle}>{user.nomeCompleto}</Text>
-            <Text style={styles.tabPlaceholderSub}>Vínculo: {user.vinculo}</Text>
-            <Text style={styles.tabPlaceholderSub}>Perfil de acesso em ambiente integrado</Text>
-          </View>
-        );
+    if (exerceAtividade) {
+      Alert.alert(
+        'Declaração Registrada',
+        'Sua declaração indicando o exercício de atividade remunerada foi enviada. O SVPM analisará as informações prestadas.',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+    } else {
+      Alert.alert(
+        'Declaração Enviada',
+        'Sua Declaração Anual de Auxílio-Invalidez foi transmitida com sucesso.',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
     }
   };
 
@@ -236,121 +135,231 @@ export default function FamiliaNavalScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#003366" />
 
-      {/* Header Fixo */}
+      {/* Header Fixo Padronizado Família Naval */}
       <View style={styles.headerBar}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => setDrawerVisible(true)} style={styles.drawerButton}>
-            <Ionicons name="menu" size={26} color="#fff" />
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <View>
             <Text style={styles.headerSubtitle}>FAMÍLIA NAVAL</Text>
-            <Text style={styles.headerTitle}>SVPM</Text>
+            <Text style={styles.headerTitle}>Auxílio-Invalidez</Text>
           </View>
         </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerIconBtn} onPress={() => Alert.alert('Notificações', 'Sem novas notificações.')}>
-            <Ionicons name="notifications-outline" size={22} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerIconBtn}
-            onPress={() => Alert.alert('Sair', 'Sessão encerrada.')}
-          >
-            <Ionicons name="log-out-outline" size={22} color="#fff" />
-          </TouchableOpacity>
-        </View>
+        <Ionicons name="medkit-outline" size={20} color="#B0C4DE" />
       </View>
 
-      {/* Conteúdo Dinâmico */}
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-        {renderContent()}
-      </ScrollView>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* CARD PRINCIPAL */}
+        <View style={styles.cardItem}>
+          <View style={styles.docHeaderBadge}>
+            <Ionicons name="document-text-outline" size={22} color={COLORS.primary} />
+            <Text style={styles.docTitle}>
+              DECLARAÇÃO ANUAL PARA PERCEPÇÃO DO AUXÍLIO-INVALIDEZ
+            </Text>
+          </View>
 
-      {/* Drawer / Menu Lateral (Modal) */}
-      <Modal visible={drawerVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.drawerContainer}>
-            <View style={styles.drawerHeader}>
-              <View style={styles.drawerAvatar}>
-                <Text style={styles.avatarText}>{user.avatarInitials}</Text>
-              </View>
-              <View style={{ marginLeft: 12, flex: 1 }}>
-                <Text style={styles.drawerUserName} numberOfLines={1}>
-                  {user.nomeCompleto}
+          <Text style={styles.declarationText}>
+            Eu, <Text style={styles.boldText}>SO GUILHERME SOUSA DA SILVA</Text>, portador(a) do NIP{' '}
+            <Text style={styles.boldText}>85856967</Text>, CPF{' '}
+            <Text style={styles.boldText}>00000028797</Text>, recebendo a Parcela de Auxílio-Invalidez por
+            intermédio do SERVIÇO DE VETERANOS E PENSIONISTAS DA MARINHA, declaro, para fins do artigo 78 do
+            DECRETO nº. 4.307 de 18 de julho de 2002, que:
+          </Text>
+
+          {/* PERGUNTA CHAVE (SEGMENTED BUTTONS) */}
+          <View style={styles.questionBox}>
+            <Text style={styles.questionText}>
+              Exerce atividade remunerada pública ou privada?
+            </Text>
+            <View style={styles.segmentedContainer}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={[styles.segmentBtn, !exerceAtividade && styles.segmentActiveNo]}
+                onPress={() => setExerceAtividade(false)}>
+                <Text style={[styles.segmentText, !exerceAtividade && styles.segmentTextActive]}>
+                  NÃO EXERÇO
                 </Text>
-                <Text style={styles.drawerUserSub}>{user.vinculo}</Text>
-              </View>
-              <TouchableOpacity onPress={() => setDrawerVisible(false)}>
-                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={[styles.segmentBtn, exerceAtividade && styles.segmentActiveYes]}
+                onPress={() => setExerceAtividade(true)}>
+                <Text style={[styles.segmentText, exerceAtividade && styles.segmentTextActive]}>
+                  EXERÇO
+                </Text>
               </TouchableOpacity>
             </View>
-
-            <ScrollView style={{ padding: 16 }}>
-              {[
-                { label: 'Início', icon: 'home-outline', tab: 'inicio' as TabType },
-                { label: 'Minhas Solicitações', icon: 'document-text-outline', tab: 'solicitacoes' as TabType },
-                {
-                  label: 'Dados do Perfil',
-                  icon: 'person-outline',
-                  action: () => {
-                    setDrawerVisible(false);
-                    navigation.navigate('dados-cadastrais');
-                  },
-                },
-              ].map((item, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={styles.drawerItem}
-                  onPress={() => {
-                    if (item.action) {
-                      item.action();
-                    } else if (item.tab) {
-                      setActiveTab(item.tab);
-                      setDrawerVisible(false);
-                    }
-                  }}
-                >
-                  <Ionicons name={item.icon as any} size={22} color="#003366" style={{ width: 30 }} />
-                  <Text style={styles.drawerItemText}>{item.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
           </View>
-          <TouchableOpacity
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
-            onPress={() => setDrawerVisible(false)}
-          />
-        </View>
-      </Modal>
 
-      {/* Barra de Navegação Inferior */}
-      <View style={styles.bottomBar}>
-        {[
-          { key: 'inicio', label: 'Início', icon: 'home' },
-          { key: 'solicitacoes', label: 'Solicitações', icon: 'list' },
-          { key: 'perfil', label: 'Perfil', icon: 'person' },
-        ].map((tab) => {
-          const isActive = activeTab === tab.key;
-          return (
+          {/* AVISOS LEGAIS COM CHECKBOX OBRIGATÓRIA */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[styles.infoBox, cienteTermos && styles.infoBoxChecked]}
+            onPress={() => setCienteTermos(!cienteTermos)}>
+            <View style={styles.checkboxRow}>
+              <View style={[styles.checkbox, cienteTermos && styles.checkboxChecked]}>
+                {cienteTermos && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+              </View>
+              <Text style={styles.checkboxLabel}>Declaro que estou ciente (Obrigatório):</Text>
+            </View>
+            <Text style={styles.infoText}>
+              • Estou ciente de que, anualmente, deverei fazer chegar ao SVPM nova Declaração, para ratificar ou não esta situação.
+            </Text>
+            <Text style={[styles.infoText, { marginTop: 4 }]}>
+              • Estou ciente de que o não atendimento desta exigência implicará na retirada da parcela da minha remuneração mensal.
+            </Text>
+          </TouchableOpacity>
+
+          {/* CABEÇALHO DA SEÇÃO DE ENDEREÇO */}
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionHeader}>Dados de Contato e Endereço</Text>
             <TouchableOpacity
-              key={tab.key}
-              style={styles.bottomBarItem}
-              onPress={() => setActiveTab(tab.key as TabType)}
-            >
+              activeOpacity={0.7}
+              style={styles.btnEditar}
+              onPress={() => setEditandoEndereco(!editandoEndereco)}>
               <Ionicons
-                name={(isActive ? tab.icon : `${tab.icon}-outline`) as any}
-                size={22}
-                color={isActive ? '#003366' : '#666'}
+                name={editandoEndereco ? 'lock-closed-outline' : 'create-outline'}
+                size={14}
+                color={COLORS.primary}
+                style={{ marginRight: 4 }}
               />
-              <Text style={[styles.bottomBarText, isActive && styles.bottomBarTextActive]}>
-                {tab.label}
+              <Text style={styles.btnEditarTexto}>
+                {editandoEndereco ? 'Bloquear' : 'Editar'}
               </Text>
             </TouchableOpacity>
-          );
-        })}
-      </View>
+          </View>
+
+          {loadingDadosBanco ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loadingText}>Buscando endereço cadastrado...</Text>
+            </View>
+          ) : (
+            <>
+              {/* CEP */}
+              <View style={styles.inputGroup}>
+                <View style={styles.labelRow}>
+                  <Text style={styles.label}>CEP</Text>
+                  {loadingCep && <ActivityIndicator size="small" color={COLORS.primary} />}
+                </View>
+                <TextInput
+                  style={[styles.input, !editandoEndereco && styles.inputDisabled]}
+                  placeholder="00000-000"
+                  keyboardType="numeric"
+                  maxLength={9}
+                  editable={editandoEndereco}
+                  value={form.cep}
+                  onChangeText={handleCepChange}
+                />
+              </View>
+
+              {/* ENDEREÇO */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Endereço (Rua, Nº, Apto, etc.)</Text>
+                <TextInput
+                  style={[styles.input, !editandoEndereco && styles.inputDisabled]}
+                  placeholder="Rua, Número, Complemento"
+                  editable={editandoEndereco}
+                  value={form.endereco}
+                  onChangeText={(t) => handleChange('endereco', t)}
+                />
+              </View>
+
+              {/* BAIRRO */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Bairro</Text>
+                <TextInput
+                  style={[styles.input, !editandoEndereco && styles.inputDisabled]}
+                  placeholder="Bairro"
+                  editable={editandoEndereco}
+                  value={form.bairro}
+                  onChangeText={(t) => handleChange('bairro', t)}
+                />
+              </View>
+
+              {/* CIDADE */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Cidade</Text>
+                <TextInput
+                  style={[styles.input, !editandoEndereco && styles.inputDisabled]}
+                  placeholder="Cidade"
+                  editable={editandoEndereco}
+                  value={form.cidade}
+                  onChangeText={(t) => handleChange('cidade', t)}
+                />
+              </View>
+
+              {/* UF */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>UF</Text>
+                <TextInput
+                  style={[styles.input, !editandoEndereco && styles.inputDisabled]}
+                  placeholder="RJ"
+                  maxLength={2}
+                  autoCapitalize="characters"
+                  editable={editandoEndereco}
+                  value={form.uf}
+                  onChangeText={(t) => handleChange('uf', t)}
+                />
+              </View>
+
+              {/* TELEFONE */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Telefone</Text>
+                <TextInput
+                  style={[styles.input, !editandoEndereco && styles.inputDisabled]}
+                  placeholder="(00) 00000-0000"
+                  keyboardType="phone-pad"
+                  maxLength={15}
+                  editable={editandoEndereco}
+                  value={form.telefone}
+                  onChangeText={handlePhoneChange}
+                />
+              </View>
+
+              {/* EMAIL */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>E-mail</Text>
+                <TextInput
+                  style={[styles.input, !editandoEndereco && styles.inputDisabled]}
+                  placeholder="seu@email.com"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={editandoEndereco}
+                  value={form.email}
+                  onChangeText={(t) => handleChange('email', t)}
+                />
+              </View>
+            </>
+          )}
+
+          {/* AÇÕES */}
+          <TouchableOpacity activeOpacity={0.8} style={styles.btnPrimary} onPress={handleEnviar}>
+            <Text style={styles.btnPrimaryText}>Enviar Declaração</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity activeOpacity={0.7} style={styles.btnSecondary} onPress={() => router.back()}>
+            <Ionicons name="arrow-back-outline" size={16} color={COLORS.textMuted} style={{ marginRight: 6 }} />
+            <Text style={styles.btnSecondaryText}>Voltar</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
+
+const COLORS = {
+  primary: '#003366',
+  primaryLight: '#EBF3FA',
+  bg: '#F5F7FA',
+  white: '#FFFFFF',
+  text: '#222222',
+  textMuted: '#555555',
+  border: '#D0DCE5',
+  borderLight: '#E0E0E0',
+};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -363,304 +372,250 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  drawerButton: {
+  backButton: {
     marginRight: 12,
   },
   headerSubtitle: {
-    color: '#b0c4de',
+    color: '#B0C4DE',
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.8,
   },
   headerTitle: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerIconBtn: {
-    marginLeft: 14,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f7fa',
   },
   scrollContent: {
-    paddingBottom: 100,
-  },
-  welcomeCard: {
-    backgroundColor: '#003366',
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    paddingTop: 12,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  welcomeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#1e4d7a',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#ffffff30',
-  },
-  avatarText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  welcomeSubtitle: {
-    color: '#b0c4de',
-    fontSize: 12,
-    marginBottom: 2,
-  },
-  welcomeTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  nipText: {
-    color: '#e0e8f0',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  sectionContainer: {
-    marginTop: 20,
     paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 40,
+    backgroundColor: COLORS.bg,
+    flexGrow: 1,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  cardItem: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
     marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 12,
-  },
-  seeAllText: {
-    color: '#003366',
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  horizontalScroll: {
-    paddingRight: 16,
-  },
-  shortcutCard: {
-    width: 105,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 12,
-    marginRight: 12,
-    alignItems: 'center',
     elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 5,
   },
-  shortcutIconBg: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  docHeaderBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: COLORS.primaryLight,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#C5DDF3',
+  },
+  docTitle: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginLeft: 10,
+    flex: 1,
+    lineHeight: 18,
+  },
+  declarationText: {
+    color: COLORS.text,
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 16,
+    textAlign: 'justify',
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+  questionBox: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 14,
+    borderColor: COLORS.borderLight,
+    borderWidth: 1,
+  },
+  questionText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  segmentedContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#E2E8F0',
+    borderRadius: 10,
+    padding: 4,
+  },
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  segmentActiveNo: {
+    backgroundColor: COLORS.primary,
+  },
+  segmentActiveYes: {
+    backgroundColor: '#D32F2F',
+  },
+  segmentText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#4A5568',
+  },
+  segmentTextActive: {
+    color: '#FFFFFF',
+  },
+  infoBox: {
+    backgroundColor: '#FFF8E1',
+    borderColor: '#FFE082',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+  },
+  infoBoxChecked: {
+    backgroundColor: '#FEF9E7',
+    borderColor: '#F6C343',
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  shortcutText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
-  },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  gridItem: {
-    width: (width - 44) / 3, // 3 colunas
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 6,
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#795548',
     alignItems: 'center',
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
+    justifyContent: 'center',
+    marginRight: 10,
+    backgroundColor: '#FFFFFF',
   },
-  gridTwoColumnsContainer: {
+  checkboxChecked: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  checkboxLabel: {
+    color: '#5D4037',
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  infoText: {
+    color: '#5D4037',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  sectionHeaderRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-  },
-  gridTwoColumnsItem: {
-    width: (width - 40) / 2, // 2 colunas para a aba de solicitações
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 12,
     alignItems: 'center',
     marginBottom: 14,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-  },
-  gridTwoColumnsText: {
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
-    lineHeight: 16,
-    marginTop: 8,
-  },
-  gridBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: '#28a745',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 4,
-    zIndex: 1,
-  },
-  badgeNewText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: 'bold',
-  },
-  gridIconBg: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#f0f4f8',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gridText: {
-    fontSize: 10.5,
-    fontWeight: '500',
-    color: '#333',
-    textAlign: 'center',
-    lineHeight: 14,
-  },
-  tabPlaceholderContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#f5f7fa',
-  },
-  tabPlaceholderTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#003366',
-    marginTop: 12,
-  },
-  tabPlaceholderSub: {
-    fontSize: 13,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 6,
-  },
-  modalOverlay: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  drawerContainer: {
-    width: '75%',
-    backgroundColor: '#fff',
-    height: '100%',
-    elevation: 10,
-  },
-  drawerHeader: {
-    backgroundColor: '#003366',
-    padding: 20,
-    paddingTop: 45,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  drawerAvatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: '#1e4d7a',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  drawerUserName: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  drawerUserSub: {
-    color: '#b0c4de',
-    fontSize: 11,
-    marginTop: 2,
-  },
-  drawerItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: COLORS.borderLight,
+    paddingBottom: 8,
   },
-  drawerItemText: {
-    fontSize: 15,
-    color: '#333',
-    fontWeight: '500',
+  sectionHeader: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 65,
-    backgroundColor: '#fff',
+  btnEditar: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: '#C5DDF3',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     flexDirection: 'row',
-    topBorderWidth: 0,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    alignItems: 'center',
   },
-  bottomBarItem: {
-    flex: 1,
+  btnEditarTexto: {
+    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  loadingContainer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 8,
+    color: COLORS.textMuted,
+    fontSize: 13,
+  },
+  inputGroup: {
+    marginBottom: 12,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  label: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  input: {
+    backgroundColor: '#FFFFFF',
+    borderColor: COLORS.border,
+    borderRadius: 10,
+    borderWidth: 1,
+    fontSize: 14,
+    height: 44,
+    paddingHorizontal: 12,
+    color: COLORS.text,
+  },
+  inputDisabled: {
+    backgroundColor: '#F0F4F8',
+    color: COLORS.textMuted,
+    borderColor: COLORS.border,
+  },
+  btnPrimary: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  btnPrimaryText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  btnSecondary: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingVertical: 14,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 10,
   },
-  bottomBarText: {
-    fontSize: 11,
-    color: '#666',
-    marginTop: 3,
-  },
-  bottomBarTextActive: {
-    color: '#003366',
+  btnSecondaryText: {
+    color: COLORS.textMuted,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
