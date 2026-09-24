@@ -1,402 +1,386 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
-export default function DacpScreen() {
-  const [exerceAtividade, setExerceAtividade] = useState(false);
+const COLORS = {
+  primary: '#003366',
+  primaryLight: '#EBF3FA',
+  textDark: '#222222',
+  textMuted: '#555555',
+  border: '#D0DCE5',
+  borderLight: '#E0E0E0',
+  bgCard: '#FFFFFF',
+  bgScreen: '#F5F7FA',
+  white: '#FFFFFF',
+  greenSuccess: '#2E7D32',
+  greenBg: '#E8F5E9',
+  warningBg: '#FFF8E1',
+  warningBorder: '#FFE082',
+  warningTitle: '#795548',
+  warningText: '#5D4037',
+  inputBg: '#FAFCFF',
+};
 
-  const [form, setForm] = useState({
-    cep: '',
-    endereco: '',
-    bairro: '',
-    cidade: '',
-    uf: '',
-    telefone: '',
-    email: '',
-  });
+export default function DACPScreen() {
+  const [jaPossuiDeclaracao, setJaPossuiDeclaracao] = useState(true);
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [perceboOutrosProventos, setPerceboOutrosProventos] = useState<'NAO' | 'SIM' | null>(null);
 
-  const handleChange = (field: string, value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const usuario = {
+    nome: 'GUILHERME SOUSA DA SILVA',
+    nip: '85856967',
+    cpf: '000.000.287-97',
+    condicao: 'Veterano(a)/Pensionista',
   };
 
   const handleEnviar = () => {
-    Alert.alert(
-      'Declaração enviada',
-      'Sua declaração foi registrada com sucesso.',
-    );
+    if (!perceboOutrosProventos) {
+      Alert.alert('Atenção', 'Selecione se percebe ou não proventos de outros cofres públicos.');
+      return;
+    }
 
-    console.log(form);
+    Alert.alert(
+      'Declaração Enviada',
+      'Sua Declaração de Acumulação de Cargos Públicos foi registada com sucesso.',
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            setJaPossuiDeclaracao(true);
+            setModoEdicao(false);
+          },
+        },
+      ]
+    );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {/* HEADER PADRÃO */}
-        <View style={styles.header}>
-          <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoTexto}>⚓</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#003366" />
+
+      {/* Header Fixo padronizado */}
+      <View style={styles.headerBar}>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity
+            onPress={() => {
+              if (jaPossuiDeclaracao && modoEdicao) {
+                setModoEdicao(false);
+              } else {
+                router.back();
+              }
+            }}
+            style={styles.drawerButton}
+          >
+            <Ionicons name="arrow-back" size={26} color="#fff" />
+          </TouchableOpacity>
+          <View>
+            <Text style={styles.headerSubtitle}>FAMÍLIA NAVAL</Text>
+            <Text style={styles.headerTitle}>Acumulação de Cargos Públicos</Text>
           </View>
-
-          <Text style={styles.titulo}>Família Naval</Text>
-
-          <Text style={styles.subtitulo}>
-            Declaração Auxílio-Invalidez
-          </Text>
         </View>
+      </View>
 
-        {/* CONTEÚDO */}
-        <View style={styles.corpo}>
-          <Text style={styles.secaoTitulo}>
-            Declaração Anual
-          </Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {jaPossuiDeclaracao && !modoEdicao ? (
+          <>
+            <View style={styles.sectionHeaderBox}>
+              <Text style={styles.sectionTitle}>Status da Declaração</Text>
+              <Text style={styles.sectionSubtitle}>DACP registrada no sistema.</Text>
+            </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitulo}>
-              DECLARAÇÃO ANUAL PARA PERCEPÇÃO
-              DO AUXÍLIO-INVALIDEZ
-            </Text>
-
-            <Text style={styles.texto}>
-              Declaro, para fins do artigo 78 do Decreto nº
-              4.307 de 18 de julho de 2002:
-            </Text>
-
-            {/* SWITCH */}
-            <View style={styles.switchContainer}>
-              <Text style={styles.label}>
-                Exerce atividade remunerada pública ou privada?
-              </Text>
-
-              <View style={styles.switchRow}>
-                <Text style={styles.switchTexto}>
-                  {exerceAtividade
-                    ? 'EXERÇO'
-                    : 'NÃO EXERÇO'}
-                </Text>
-
-                <Switch
-                  value={exerceAtividade}
-                  onValueChange={setExerceAtividade}
+            <View style={styles.card}>
+              <View style={styles.statusBox}>
+                <Ionicons
+                  name="document-text-outline"
+                  size={24}
+                  color={COLORS.primary}
+                  style={{ marginBottom: 8 }}
                 />
+                <Text style={styles.statusText}>
+                  Prezado(a) Usuário(a), participa-se que consta em nosso sistema a declaração de acumulação de cargos públicos.
+                </Text>
+                <Text style={[styles.statusText, { fontWeight: 'bold', marginTop: 10 }]}>
+                  Deseja atualizar?
+                </Text>
               </View>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.botaoPrimary}
+                onPress={() => setModoEdicao(true)}
+              >
+                <Text style={styles.botaoPrimaryText}>Atualizar Declaração</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <>
+            <View style={styles.sectionHeaderBox}>
+              <Text style={styles.sectionTitle}>Nova Declaração (DACP)</Text>
+              <Text style={styles.sectionSubtitle}>Preencha os dados abaixo sob as penas da lei.</Text>
             </View>
 
-            <Text style={styles.aviso}>
-              Estou ciente de que, anualmente,
-              deverei encaminhar nova declaração ao SVPM.
-            </Text>
+            <View style={styles.card}>
+              {/* IDENTIFICAÇÃO E DECLARAÇÃO */}
+              <View style={styles.declaracaoBox}>
+                <Text style={styles.declaracaoText}>
+                  Eu, <Text style={styles.boldText}>{usuario.nome}</Text>, portador(a) do NIP{' '}
+                  <Text style={styles.boldText}>{usuario.nip}</Text>, CPF{' '}
+                  <Text style={styles.boldText}>{usuario.cpf}</Text>, declaro,{' '}
+                  <Text style={styles.underlineText}>sob as penas da Lei</Text>, que, além dos Proventos
+                  percebidos, por mim, dos cofres públicos, via Marinha do Brasil, na condição de{' '}
+                  <Text style={styles.boldText}>{usuario.condicao}</Text>:
+                </Text>
+              </View>
 
-            <Text style={styles.aviso}>
-              O não atendimento desta exigência poderá
-              implicar na retirada da parcela da remuneração.
-            </Text>
+              {/* OPÇÕES DE SELEÇÃO */}
+              <View style={styles.optionsContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={[
+                    styles.optionCard,
+                    perceboOutrosProventos === 'NAO' && styles.optionCardSelected,
+                  ]}
+                  onPress={() => setPerceboOutrosProventos('NAO')}
+                >
+                  <View style={styles.radioOuter}>
+                    {perceboOutrosProventos === 'NAO' && <View style={styles.radioInner} />}
+                  </View>
+                  <Text style={styles.optionText}>
+                    <Text style={styles.boldText}>NÃO</Text> percebo nenhuma importância oriunda de outros cofres públicos.
+                  </Text>
+                </TouchableOpacity>
 
-            <View style={styles.divider} />
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={[
+                    styles.optionCard,
+                    perceboOutrosProventos === 'SIM' && styles.optionCardSelected,
+                  ]}
+                  onPress={() => setPerceboOutrosProventos('SIM')}
+                >
+                  <View style={styles.radioOuter}>
+                    {perceboOutrosProventos === 'SIM' && <View style={styles.radioInner} />}
+                  </View>
+                  <Text style={styles.optionText}>
+                    <Text style={styles.boldText}>PERCEBO</Text> provento(s) do(s) seguinte(s) cofre(s).
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-            <Text style={styles.subtituloSessao}>
-              Dados de contato e endereço
-            </Text>
-
-            {/* CEP */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>CEP</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="00000-000"
-                value={form.cep}
-                onChangeText={(text) =>
-                  handleChange('cep', text)
-                }
-              />
+              {/* BOTÃO ENVIAR */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.botaoPrimary}
+                onPress={handleEnviar}
+              >
+                <Text style={styles.botaoPrimaryText}>Enviar Declaração</Text>
+              </TouchableOpacity>
             </View>
 
-            {/* ENDEREÇO */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>
-                Endereço
+            {/* AVISOS IMPORTANTES */}
+            <View style={styles.warningBox}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                <Ionicons name="information-circle-outline" size={16} color={COLORS.warningTitle} style={{ marginRight: 4 }} />
+                <Text style={styles.warningTitle}>IMPORTANTE:</Text>
+              </View>
+              <Text style={styles.warningItem}>
+                • O recebimento de parcela referente à situação de <Text style={styles.underlineText}>TTC</Text> não deve ser considerada para fins de acumulação.
               </Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Rua, número, apartamento..."
-                value={form.endereco}
-                onChangeText={(text) =>
-                  handleChange('endereco', text)
-                }
-              />
-            </View>
-
-            {/* BAIRRO */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Bairro</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Digite o bairro"
-                value={form.bairro}
-                onChangeText={(text) =>
-                  handleChange('bairro', text)
-                }
-              />
-            </View>
-
-            {/* CIDADE */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Cidade</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Digite a cidade"
-                value={form.cidade}
-                onChangeText={(text) =>
-                  handleChange('cidade', text)
-                }
-              />
-            </View>
-
-            {/* UF */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>UF</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="RJ"
-                maxLength={2}
-                autoCapitalize="characters"
-                value={form.uf}
-                onChangeText={(text) =>
-                  handleChange('uf', text)
-                }
-              />
-            </View>
-
-            {/* TELEFONE */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Telefone</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="(00) 00000-0000"
-                keyboardType="phone-pad"
-                value={form.telefone}
-                onChangeText={(text) =>
-                  handleChange('telefone', text)
-                }
-              />
-            </View>
-
-            {/* EMAIL */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>E-mail</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="email@exemplo.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={form.email}
-                onChangeText={(text) =>
-                  handleChange('email', text)
-                }
-              />
-            </View>
-
-            {/* BOTÃO ENVIAR */}
-            <TouchableOpacity
-              style={styles.botaoEnviar}
-              onPress={handleEnviar}>
-              <Text style={styles.botaoEnviarTexto}>
-                Enviar Declaração
+              <Text style={styles.warningItem}>
+                • O SVPM verificará os princípios de legalidade, moralidade e impessoalidade quanto à situação de acumulação remunerada de cargos públicos, e o(a) informará brevemente, de acordo com as disposições legais, caso haja algo a se esclarecer.
               </Text>
-            </TouchableOpacity>
-
-            {/* BOTÃO VOLTAR */}
-            <TouchableOpacity
-              style={styles.botaoVoltar}
-              onPress={() => router.back()}>
-              <Text style={styles.botaoVoltarTexto}>
-                Voltar
+              <Text style={styles.warningItem}>
+                • O SVPM vem realizando auditorias constantes, em conjunto com o TCU, a fim de preservar o patrimônio público (erário) nos pagamentos de proventos a Veteranos e seus Pensionistas.
               </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#F4F6F8',
+    backgroundColor: '#003366',
   },
-
-  header: {
+  headerBar: {
+    backgroundColor: '#003366',
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#003B75',
-    paddingBottom: 40,
-    paddingTop: 50,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-
-  logoPlaceholder: {
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 40,
-    height: 80,
-    justifyContent: 'center',
-    marginBottom: 15,
-    width: 80,
   },
-
-  logoTexto: {
-    fontSize: 40,
+  drawerButton: {
+    marginRight: 12,
   },
-
-  titulo: {
-    color: '#FFFFFF',
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 5,
+  headerSubtitle: {
+    color: '#b0c4de',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
   },
-
-  subtitulo: {
-    color: '#D6E4F0',
+  headerTitle: {
+    color: '#fff',
     fontSize: 16,
-    fontStyle: 'italic',
-  },
-
-  corpo: {
-    padding: 20,
-  },
-
-  secaoTitulo: {
-    color: '#003366',
-    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 15,
   },
-
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    borderWidth: 1,
-    elevation: 2,
-    padding: 20,
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 40,
+    backgroundColor: COLORS.bgScreen,
+    flexGrow: 1,
   },
-
-  cardTitulo: {
-    color: '#003366',
+  sectionHeaderBox: {
+    marginBottom: 12,
+  },
+  sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    lineHeight: 28,
-    marginBottom: 20,
+    color: COLORS.primary,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  card: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    padding: 18,
+  },
+  statusBox: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    alignItems: 'center',
+  },
+  statusText: {
+    color: COLORS.textDark,
+    fontSize: 13,
+    lineHeight: 20,
     textAlign: 'center',
   },
-
-  texto: {
-    color: '#333333',
-    fontSize: 15,
-    lineHeight: 24,
-    marginBottom: 20,
-  },
-
-  switchContainer: {
-    marginBottom: 20,
-  },
-
-  switchRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-
-  switchTexto: {
-    color: '#003366',
-    fontSize: 15,
-    fontWeight: 'bold',
-  },
-
-  aviso: {
-    color: '#555555',
-    fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 10,
-  },
-
-  divider: {
-    backgroundColor: '#E2E8F0',
-    height: 1,
-    marginVertical: 20,
-  },
-
-  subtituloSessao: {
-    color: '#003366',
-    fontSize: 17,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-
-  inputGroup: {
+  declaracaoBox: {
+    backgroundColor: COLORS.inputBg,
+    borderRadius: 10,
+    padding: 14,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
     marginBottom: 16,
   },
-
-  label: {
-    color: '#333333',
-    fontSize: 14,
+  declaracaoText: {
+    color: COLORS.textDark,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: COLORS.textDark,
+  },
+  underlineText: {
+    textDecorationLine: 'underline',
+    fontWeight: '600',
+  },
+  optionsContainer: {
+    gap: 10,
     marginBottom: 8,
   },
-
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#DADCE0',
-    borderRadius: 10,
-    borderWidth: 1,
-    fontSize: 15,
-    height: 52,
-    paddingHorizontal: 14,
-  },
-
-  botaoEnviar: {
+  optionCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2E7D32',
+    backgroundColor: COLORS.inputBg,
+    borderColor: COLORS.borderLight,
+    borderWidth: 1,
     borderRadius: 10,
-    marginTop: 15,
-    paddingVertical: 16,
+    padding: 14,
   },
-
-  botaoEnviarTexto: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  optionCardSelected: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
+    borderWidth: 1.5,
+  },
+  radioOuter: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  radioInner: {
+    height: 10,
+    width: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.primary,
+  },
+  optionText: {
+    color: COLORS.textDark,
+    fontSize: 13,
+    flex: 1,
+    lineHeight: 18,
+  },
+  warningBox: {
+    backgroundColor: COLORS.warningBg,
+    borderColor: COLORS.warningBorder,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 16,
+  },
+  warningTitle: {
+    color: COLORS.warningTitle,
+    fontSize: 12,
     fontWeight: 'bold',
   },
-
-  botaoVoltar: {
-    alignItems: 'center',
-    backgroundColor: '#E5E7EB',
-    borderRadius: 10,
-    marginTop: 12,
-    paddingVertical: 14,
+  warningItem: {
+    color: COLORS.warningText,
+    fontSize: 11,
+    lineHeight: 16,
+    marginBottom: 6,
   },
-
-  botaoVoltarTexto: {
-    color: '#333333',
-    fontSize: 15,
+  botaoPrimary: {
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    marginTop: 18,
+    padding: 14,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+  },
+  botaoPrimaryText: {
+    color: COLORS.white,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
