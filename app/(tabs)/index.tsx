@@ -81,6 +81,39 @@ const AUTOATENDIMENTO_LIST = [
   },
 ];
 
+const LINKS_UTEIS_LIST = [
+  {
+    title: 'BP-Online (Contracheque)',
+    icon: 'receipt-outline',
+    color: '#003366',
+    url: 'https://bponline.marinha.mil.br/bponline/login',
+  },
+  {
+    title: 'Consignado / PAPEM',
+    icon: 'card-outline',
+    color: '#003366',
+    url: 'https://papem.econsigmb.com.br/mb/v3/autenticar#no-back',
+  },
+  {
+    title: 'Pesquisa de Avaliação de Atendimento',
+    icon: 'star-outline',
+    color: '#003366',
+    url: 'https://www.marinha.mil.br/svpm/form/pesquisaAtendimento',
+  },
+  {
+    title: 'Abrigo do Marinheiro',
+    icon: 'home-heart',
+    color: '#003366',
+    url: 'https://www.abrigo.org.br/',
+  },
+  {
+    title: 'Identidade Digital',
+    icon: 'card-account-details-outline',
+    color: '#003366',
+    url: 'https://websitesvpm.marinha.mil.br/links',
+  },
+];
+
 const DRAWER_ITEMS = [
   { label: 'Início', icon: 'home-outline', tab: 'inicio' as TabType },
   { label: 'Minhas Solicitações', icon: 'document-text-outline', tab: 'solicitacoes' as TabType },
@@ -146,10 +179,7 @@ export default function FamiliaNavalScreen() {
 
             <View style={styles.sectionContainer}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Autoatendimento</Text>
-                <TouchableOpacity onPress={() => setActiveTab('solicitacoes')}>
-                  <Text style={styles.seeAllText}>Ver todos</Text>
-                </TouchableOpacity>
+                <Text style={styles.sectionTitle}>Principais Serviços</Text>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
                 {AUTOATENDIMENTO_LIST.map((item, index) => (
@@ -167,8 +197,31 @@ export default function FamiliaNavalScreen() {
               </ScrollView>
             </View>
 
+            {/* SEÇÃO DE LINKS ÚTEIS */}
             <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Solicitações</Text>
+              <Text style={styles.sectionTitle}>Links Úteis</Text>
+              <View style={styles.gridContainer}>
+                {LINKS_UTEIS_LIST.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.gridItem}
+                    onPress={() => handleAction(item)}
+                  >
+                    <View style={styles.gridIconBg}>
+                      {item.icon.includes('home') || item.icon.includes('card') ? (
+                        <MaterialCommunityIcons name={item.icon as any} size={24} color={item.color} />
+                      ) : (
+                        <Ionicons name={item.icon as any} size={24} color={item.color} />
+                      )}
+                    </View>
+                    <Text style={styles.gridText} numberOfLines={2}>{item.title}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Serviços</Text>
               <View style={styles.gridContainer}>
                 {SOLICITACOES_LIST.map((item, index) => (
                   <TouchableOpacity
@@ -383,7 +436,7 @@ const styles = StyleSheet.create({
   drawerItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   drawerItemIcon: { width: 30 },
   drawerItemText: { fontSize: 15, color: '#333', fontWeight: '500' },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  modalBackdrop: { flex: í, backgroundColor: 'rgba(0,0,0,0.4)' },
   bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 65, backgroundColor: '#fff', flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#e0e0e0', elevation: 8, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4 },
   bottomBarItem: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   bottomBarText: { fontSize: 11, color: '#666', marginTop: 3 },
