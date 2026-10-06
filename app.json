@@ -26,6 +26,13 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "@config-plugins/react-native-blob-util",
+        {
+          "enableAndroidDownloadService": true
+        }
+      ],
+      "@config-plugins/react-native-pdf",
       "expo-router",
       [
         "expo-splash-screen",
